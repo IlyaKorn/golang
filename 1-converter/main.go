@@ -18,6 +18,6 @@ func getUserInput() string {
 	return input
 }
 
-func calculate(currencyFrom, currencyTo string) float64 {
+func calculate(sum int, currencyFrom string, currencyTo string) float64 {
 	return 1.0
 }
