@@ -34,7 +34,7 @@ func getCurrencyTo(currencyFrom string) string {
 	_, err := isCurrencyInputValid(currencyTo)
 	if err != nil || currencyFrom == currencyTo {
 		fmt.Println("Введена некорректная валюта, попробуйте еще раз")
-		getCurrencyTo(currencyFrom)
+		return getCurrencyTo(currencyFrom)
 	}
 
 	return currencyTo
@@ -47,7 +47,7 @@ func getAmount() float64 {
 	_, err := isAmountValid(result)
 	if err != nil {
 		fmt.Println("Введена некорректная сумма, попробуйте еще раз ввести число", err)
-		getAmount()
+		return getAmount()
 	}
 	return result
 }
