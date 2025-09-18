@@ -1,23 +1,132 @@
 package main
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 func main() {
-	const USDToEURO = 0.86
+	currencyFrom := getCurrencyFrom()
+	currencyTo := getCurrencyTo(currencyFrom)
+	amount := getAmount()
+
+	fmt.Println("Сумма к получению:", calculate(currencyFrom, currencyTo, amount), currencyTo)
+
+}
+
+func getCurrencyFrom() string {
+	var currencyFrom string
+	fmt.Print("Введите валюту, которую хотите конвертировать (EUR|USD|RUB): ")
+	fmt.Scan(&currencyFrom)
+	_, err := isCurrencyInputValid(currencyFrom)
+	if err != nil {
+		fmt.Println("Введена некорректная валюта, попробуйте еще раз", err)
+		return getCurrencyFrom()
+	}
+
+	return currencyFrom
+}
+
+func getCurrencyTo(currencyFrom string) string {
+	var currencyTo string
+	fmt.Println(getTitleForCurrencyFrom(currencyFrom))
+	fmt.Scan(&currencyTo)
+	_, err := isCurrencyInputValid(currencyTo)
+	if err != nil || currencyFrom == currencyTo {
+		fmt.Println("Введена некорректная валюта, попробуйте еще раз")
+		return getCurrencyTo(currencyFrom)
+	}
+
+	return currencyTo
+}
+
+func getAmount() float64 {
+	var result float64
+	fmt.Println("Введите сумму, которую хотите конвертировать: ")
+	fmt.Scan(&result)
+	_, err := isAmountValid(result)
+	if err != nil {
+		fmt.Println("Введена некорректная сумма, попробуйте еще раз ввести число", err)
+		return getAmount()
+	}
+	return result
+}
+
+func getTitleForCurrencyFrom(currencyFrom string) string {
+	title := "Введите валюту в которую хотите конвертировать "
+	switch currencyFrom {
+	case "EUR":
+		{
+			return title + "USD|RUB: "
+		}
+	case "USD":
+		{
+			return title + "EUR|RUB: "
+		}
+	case "RUB":
+		{
+			return title + "EUR|USD: "
+		}
+	default:
+		return title + "EUR|USD|RUB"
+	}
+}
+
+func isCurrencyInputValid(currency string) (bool, error) {
+	if currency == "EUR" || currency == "USD" || currency == "RUB" {
+		return true, nil
+	} else {
+		return false, errors.New("invalid currency")
+	}
+}
+
+func isAmountValid(amount float64) (bool, error) {
+	if amount <= 0 {
+		return false, errors.New("invalid amount")
+	}
+	return true, nil
+}
+
+func calculate(currencyFrom, currencyTo string, amount float64) string {
+	const USDToEUR = 0.86
 	const USDToRUB = 80.69
+	const EURToRUB = 100
 
-	EUROToRUB := 1 / USDToEURO * USDToRUB
+	var result float64
 
-	fmt.Print(EUROToRUB)
-}
+	switch {
+	case currencyFrom == "EUR" && currencyTo == "USD":
+		{
+			result = amount / USDToEUR
+		}
 
-func getUserInput() string {
-	var input string
-	fmt.Print("Enter your input: ")
-	fmt.Scan(&input)
-	return input
-}
+	case currencyFrom == "USD" && currencyTo == "EUR":
+		{
+			result = amount * USDToEUR
+		}
 
-func calculate(sum int, currencyFrom string, currencyTo string) float64 {
-	return 1.0
+	case currencyFrom == "EUR" && currencyTo == "RUB":
+		{
+			result = amount * EURToRUB
+		}
+
+	case currencyFrom == "RUB" && currencyTo == "EUR":
+		{
+			result = amount / EURToRUB
+		}
+
+	case currencyFrom == "USD" && currencyTo == "RUB":
+		{
+			result = amount * USDToRUB
+		}
+
+	case currencyFrom == "RUB" && currencyTo == "USD":
+		{
+			result = amount / USDToRUB
+		}
+	}
+
+	formattedResult := fmt.Sprintf("%.2f", result)
+
+	return formattedResult
 }
