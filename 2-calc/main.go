@@ -8,6 +8,8 @@ import (
 	"strings"
 )
 
+type Calculation = map[string]func(nubmers []float64) float64
+
 func main() {
 	currentOperation := chooseUserOperation()
 	userNumbers := scanUserOperations()
@@ -63,34 +65,35 @@ func createSliceInt(operations string) []string {
 }
 
 func calculateNumbers(operation string, numbers []float64) float64 {
-	var result float64
-
-	switch operation {
-	case "SUM":
-		{
+	var result = Calculation{
+		"SUM": func(numbers []float64) float64 {
+			var resultCalculation = 0.0
 			for _, value := range numbers {
-				result += value
+				resultCalculation += value
 			}
-		}
-	case "AVG":
-		{
+			return resultCalculation
+		},
+		"AVG": func(numbers []float64) float64 {
+			var resultCalculation = 0.0
 			for _, value := range numbers {
-				result += value
+				resultCalculation += value
 			}
 
-			result = result / float64(len(numbers))
-		}
-	default:
-		{
+			return resultCalculation / float64(len(numbers))
+		},
+		"MED": func(numbers []float64) float64 {
+			resultCalculation := 0.0
 			sort.Float64s(numbers)
 			if len(numbers)%2 == 0 {
 				// 1 is a number that based in the middle of the slice for calculating median
-				result = ((numbers[len(numbers)/2]) + (numbers[len(numbers)/2-1])) / 2
+				resultCalculation = ((numbers[len(numbers)/2]) + (numbers[len(numbers)/2-1])) / 2
 			} else {
-				result = numbers[len(numbers)/2]
+				resultCalculation = numbers[len(numbers)/2]
 			}
-		}
+
+			return resultCalculation
+		},
 	}
 
-	return result
+	return result[operation](numbers)
 }
