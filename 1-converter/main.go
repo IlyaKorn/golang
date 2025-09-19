@@ -6,6 +6,7 @@ import (
 )
 
 type CurrencyExchange = map[string]float64
+type CurrenciesCalculation = map[string]map[string]func(float64) float64
 
 func main() {
 	currencyFrom := getCurrencyFrom()
@@ -85,7 +86,7 @@ func calculate(currencyFrom, currencyTo string, amount float64) string {
 		"USDToEUR": 0.86, "USDToRUB": 80.69, "EURToRUB": 100,
 	}
 
-	abraham := map[string]map[string]func(float64) float64{
+	currencyCalculation := CurrenciesCalculation{
 		"EUR": {
 			"USD": func(amount float64) float64 {
 				return amount * currenciesList["USDToEUR"]
@@ -112,7 +113,7 @@ func calculate(currencyFrom, currencyTo string, amount float64) string {
 		},
 	}
 
-	result := fmt.Sprintf("%.2f", abraham[currencyFrom][currencyTo](amount))
+	result := fmt.Sprintf("%.2f", currencyCalculation[currencyFrom][currencyTo](amount))
 
 	return result
 }
