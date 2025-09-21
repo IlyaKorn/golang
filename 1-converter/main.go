@@ -5,13 +5,46 @@ import (
 	"fmt"
 )
 
+type CurrencyExchange = map[string]float64
+type CurrenciesCalculation = map[string]map[string]func(float64) float64
+
 func main() {
+	currencies := CurrencyExchange{
+		"USDToEUR": 0.86, "USDToRUB": 80.69, "EURToRUB": 100,
+	}
+
+	currenciesCalculation := CurrenciesCalculation{
+		"EUR": {
+			"USD": func(amount float64) float64 {
+				return amount * currencies["USDToEUR"]
+			},
+			"RUB": func(amount float64) float64 {
+				return amount * currencies["EURToRUB"]
+			},
+		},
+		"USD": {
+			"EUR": func(amount float64) float64 {
+				return amount / currencies["USDToEUR"]
+			},
+			"RUB": func(amount float64) float64 {
+				return amount * currencies["USDToRUB"]
+			},
+		},
+		"RUB": {
+			"EUR": func(amount float64) float64 {
+				return amount / currencies["EURToRUB"]
+			},
+			"USD": func(amount float64) float64 {
+				return amount / currencies["USDToRUB"]
+			},
+		},
+	}
+
 	currencyFrom := getCurrencyFrom()
 	currencyTo := getCurrencyTo(currencyFrom)
 	amount := getAmount()
 
-	fmt.Println("Сумма к получению:", calculate(currencyFrom, currencyTo, amount), currencyTo)
-
+	fmt.Println("Сумма к получению:", calculate(currencyFrom, currencyTo, amount, &currenciesCalculation))
 }
 
 func getCurrencyFrom() string {
@@ -54,22 +87,13 @@ func getAmount() float64 {
 
 func getTitleForCurrencyFrom(currencyFrom string) string {
 	title := "Введите валюту в которую хотите конвертировать "
-	switch currencyFrom {
-	case "EUR":
-		{
-			return title + "USD|RUB: "
-		}
-	case "USD":
-		{
-			return title + "EUR|RUB: "
-		}
-	case "RUB":
-		{
-			return title + "EUR|USD: "
-		}
-	default:
-		return title + "EUR|USD|RUB"
+	text := map[string]string{
+		"EUR": "USD|RUB: ",
+		"USD": "EUR|RUB: ",
+		"RUB": "EUR|USD: ",
 	}
+
+	return title + text[currencyFrom]
 }
 
 func isCurrencyInputValid(currency string) (bool, error) {
@@ -87,46 +111,8 @@ func isAmountValid(amount float64) (bool, error) {
 	return true, nil
 }
 
-func calculate(currencyFrom, currencyTo string, amount float64) string {
-	const USDToEUR = 0.86
-	const USDToRUB = 80.69
-	const EURToRUB = 100
+func calculate(currencyFrom, currencyTo string, amount float64, currencyCalculation *CurrenciesCalculation) string {
+	result := fmt.Sprintf("%.2f", (*currencyCalculation)[currencyFrom][currencyTo](amount))
 
-	var result float64
-
-	switch {
-	case currencyFrom == "EUR" && currencyTo == "USD":
-		{
-			result = amount / USDToEUR
-		}
-
-	case currencyFrom == "USD" && currencyTo == "EUR":
-		{
-			result = amount * USDToEUR
-		}
-
-	case currencyFrom == "EUR" && currencyTo == "RUB":
-		{
-			result = amount * EURToRUB
-		}
-
-	case currencyFrom == "RUB" && currencyTo == "EUR":
-		{
-			result = amount / EURToRUB
-		}
-
-	case currencyFrom == "USD" && currencyTo == "RUB":
-		{
-			result = amount * USDToRUB
-		}
-
-	case currencyFrom == "RUB" && currencyTo == "USD":
-		{
-			result = amount / USDToRUB
-		}
-	}
-
-	formattedResult := fmt.Sprintf("%.2f", result)
-
-	return formattedResult
+	return result
 }
