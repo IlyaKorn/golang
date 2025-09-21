@@ -9,12 +9,42 @@ type CurrencyExchange = map[string]float64
 type CurrenciesCalculation = map[string]map[string]func(float64) float64
 
 func main() {
+	currencies := CurrencyExchange{
+		"USDToEUR": 0.86, "USDToRUB": 80.69, "EURToRUB": 100,
+	}
+
+	currenciesCalculation := CurrenciesCalculation{
+		"EUR": {
+			"USD": func(amount float64) float64 {
+				return amount * currencies["USDToEUR"]
+			},
+			"RUB": func(amount float64) float64 {
+				return amount * currencies["EURToRUB"]
+			},
+		},
+		"USD": {
+			"EUR": func(amount float64) float64 {
+				return amount / currencies["USDToEUR"]
+			},
+			"RUB": func(amount float64) float64 {
+				return amount * currencies["USDToRUB"]
+			},
+		},
+		"RUB": {
+			"EUR": func(amount float64) float64 {
+				return amount / currencies["EURToRUB"]
+			},
+			"USD": func(amount float64) float64 {
+				return amount / currencies["USDToRUB"]
+			},
+		},
+	}
+
 	currencyFrom := getCurrencyFrom()
 	currencyTo := getCurrencyTo(currencyFrom)
 	amount := getAmount()
 
-	fmt.Println("Сумма к получению:", calculate(currencyFrom, currencyTo, amount), currencyTo)
-
+	fmt.Println("Сумма к получению:", calculate(currencyFrom, currencyTo, amount, &currenciesCalculation))
 }
 
 func getCurrencyFrom() string {
@@ -81,39 +111,8 @@ func isAmountValid(amount float64) (bool, error) {
 	return true, nil
 }
 
-func calculate(currencyFrom, currencyTo string, amount float64) string {
-	currenciesList := CurrencyExchange{
-		"USDToEUR": 0.86, "USDToRUB": 80.69, "EURToRUB": 100,
-	}
-
-	currencyCalculation := CurrenciesCalculation{
-		"EUR": {
-			"USD": func(amount float64) float64 {
-				return amount * currenciesList["USDToEUR"]
-			},
-			"RUB": func(amount float64) float64 {
-				return amount * currenciesList["EURToRUB"]
-			},
-		},
-		"USD": {
-			"EUR": func(amount float64) float64 {
-				return amount / currenciesList["USDToEUR"]
-			},
-			"RUB": func(amount float64) float64 {
-				return amount * currenciesList["USDToRUB"]
-			},
-		},
-		"RUB": {
-			"EUR": func(amount float64) float64 {
-				return amount / currenciesList["EURToRUB"]
-			},
-			"USD": func(amount float64) float64 {
-				return amount / currenciesList["USDToRUB"]
-			},
-		},
-	}
-
-	result := fmt.Sprintf("%.2f", currencyCalculation[currencyFrom][currencyTo](amount))
+func calculate(currencyFrom, currencyTo string, amount float64, currencyCalculation *CurrenciesCalculation) string {
+	result := fmt.Sprintf("%.2f", (*currencyCalculation)[currencyFrom][currencyTo](amount))
 
 	return result
 }
